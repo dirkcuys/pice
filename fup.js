@@ -49,7 +49,6 @@ exports.uploadToFlickr = function(filePath, photosetTitle, uploadCallback){
         });
     }
 
-
     api({
         method: 'upload',
         //title: '',
@@ -63,6 +62,7 @@ exports.uploadToFlickr = function(filePath, photosetTitle, uploadCallback){
     }, function(err, response) {
         if (err) {
             console.error('Could not upload photo:', err);
+            uploadCallback(err);
         }
         else {
             console.log('Uploaded photo ' + filePath);
