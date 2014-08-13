@@ -51,32 +51,24 @@ var syncToFlickr = function(filename){
     function() {
         var photoset = filename.replace(picRoot, '').split('/').slice(0,-1).join(' - ');
         console.log('Uploading ' + filename + ' and adding to ' + photoset);
-        fup.uploadToFlickr(filename, function (err, resp){
-            if (err) {
-                deferred.reject(err);
-            }
-            else {
-                fup.addToPhotoset(resp.photoId, photoset, function(err, result){
-                    if (err){
-                        deferred.reject(err);
-                    }
-                    else {
-                         markUploaded(filename, function(err, result){
-                             if (err){
-                                 deferred.reject(err);
-                             }
-                             else {
-                                 deferred.resolve({});
-                             }
-                         });
-                    }
-                });
-            }
+        
+        Q.nfapply(fup.uploadToFlickr, [filename])
+        .then(function(result){
+            return Q.nfapply(fup.addToPhotoset, [result.photoId, photoset]);
+        })
+        .then(function(result){
+            return Q.nfapply(markUploaded, [filename]);
+        })
+        .then(function(result){
+            deferred.resolve(result);
+        })
+        .catch(function(error){
+            deferred.reject(error);
         }); 
     });
     return deferred.promise;
-
 }
+
 
 //var picRoot = "/media/dirk/7A9E98509E9806B3/dc/Nikon D3200/Flickr Uploads/"
 var picRoot = "/home/dirk/workspace/pice/test-data/";
@@ -86,11 +78,14 @@ glob(picRoot + "**/*.JPG", {}, function(er, files){
         funcs.push(function(){
             console.log('' + (1+index) + '/' + files.length);
             return syncToFlickr(filename);
+            /*var def = Q.defer();
+            def.resolve({});
+            return def.promise;*/
         });
     });
 
     var trigger = Q.defer();
-    var result = Q(function(){return trigger.promise;});
+    var result = trigger.promise;
     funcs.forEach(function (f) {
         result = result.then(f);
     });
