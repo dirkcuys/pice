@@ -8,9 +8,16 @@
   },
   "author": "d27",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dirkcuys/pice.git"
+  },
   "dependencies": {
     "config": "^1.0.2",
     "flickr-with-uploads": "^2.0.4",
-    "glob": "^4.0.5"
+    "glob": "^4.0.5",
+    "xml2js": "^0.4.4",
+    "xmldom": "^0.1.19",
+    "xpath": "0.0.7"
   }
 }
