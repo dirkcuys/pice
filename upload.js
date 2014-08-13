@@ -52,11 +52,34 @@ var syncToFlickr = function(filename){
         var photoset = filename.replace(picRoot, '').split('/').slice(0,-1).join(' - ');
         console.log('Uploading ' + filename + ' and adding to ' + photoset);
         
-        Q.nfapply(fup.uploadToFlickr, [filename])
+        Q.fcall(function(){
+            var tagDefer = Q.defer();
+            xmp.read(filename + '.xmp', function(error, result){
+                if (error){
+                    deferred.notify('No tags for ' + filename);
+                    tagDefer.resolve({'tags': null});
+                }
+                else {
+                    deferred.notify('Tags loaded for ' + filename + ' ' + result.tags);
+                    tagDefer.resolve(result);
+                }
+            });
+            return tagDefer.promise;
+        })
         .then(function(result){
+            if (result.tags){
+                return Q.nfapply(fup.uploadToFlickr, [filename, result.tags.join(',')]);
+            }
+            else {
+                return Q.nfapply(fup.uploadToFlickr, [filename, null]);
+            }
+        })
+        .then(function(result){
+            deferred.notify('Uploaded ' + filename);
             return Q.nfapply(fup.addToPhotoset, [result.photoId, photoset]);
         })
         .then(function(result){
+            deferred.notify('Added ' + filename + ' to photoset ' + photoset);
             return Q.nfapply(markUploaded, [filename]);
         })
         .then(function(result){
@@ -64,14 +87,15 @@ var syncToFlickr = function(filename){
         })
         .catch(function(error){
             deferred.reject(error);
-        }); 
+        })
+        .done(); 
     });
     return deferred.promise;
 }
 
 
-//var picRoot = "/media/dirk/7A9E98509E9806B3/dc/Nikon D3200/Flickr Uploads/"
-var picRoot = "/home/dirk/workspace/pice/test-data/";
+var picRoot = "/media/dirk/7A9E98509E9806B3/dc/Nikon D3200/Flickr Uploads/"
+//var picRoot = "/home/dirk/workspace/pice/test-data/";
 glob(picRoot + "**/*.JPG", {}, function(er, files){
     var funcs = [];
     files.forEach(function(filename, index){
@@ -91,6 +115,9 @@ glob(picRoot + "**/*.JPG", {}, function(er, files){
     });
     result.then(function(res){
         console.log('Done with all');
+    });
+    result.progress(function(progress){
+        console.log('Progress ' + progress);
     });
     trigger.resolve('Go');
 });

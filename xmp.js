@@ -31,7 +31,7 @@ exports.read = function(filename, cb){
     });
 };
 
-exports.read('/media/dirk/7A9E98509E9806B3/dc/Nikon D3200/Flickr Uploads/VSA 2013/1-New York/DSC_0170.JPG.xmp', function(error, metadata){
+/*exports.read('/media/dirk/7A9E98509E9806B3/dc/Nikon D3200/Flickr Uploads/VSA 2013/1-New York/DSC_0170.JPG.xmp', function(error, metadata){
     if (error){
         console.log("Could not read metadata: " + error);
     }
@@ -39,4 +39,4 @@ exports.read('/media/dirk/7A9E98509E9806B3/dc/Nikon D3200/Flickr Uploads/VSA 201
         console.log(metadata);
         console.log(metadata.tags);
     }
-});
+});*/
